@@ -1,0 +1,14 @@
+Package: operap
+Type: Package
+Title: Cancer Staging Using Ordinal Risk Factors
+Version: 0.1.0
+Authors@R: c(person("Yingzhou", "Liu", email = "yingzhou6666@gmail.com", role = c("aut","cre")), person("Menggang", "Yu", email = "myu44@wisc.edu", role = c("aut")))
+Maintainer: Yingzhou Liu <yingzhou6666@gmail.com>
+Description: This package implements a new method called Ordering Partially Ordered Set Elements by Recursive Amalgamation (OPERA), which leverages the ordered information and allows general grouping patterns. Coupled with pruning, it can also be generalized to different types of outcomes, such as survival and binary outcomes, and scaled to multiple risk factors with improved performance compared to traditional tree methods. Besides cancer staging, this method has many implications for other areas of healthcare that involves clustering based on ordinal variables and clinical outcomes to identify homogeneous patients for clinical trials or to prioritize clinical resources to patients in advanced stages.
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.2.1
+Imports: Rcpp (>= 1.0.9), grDevices (>= 4.2.1), graphics (>= 4.2.1), stats (>= 4.2.1), colorspace (>= 2.0.3), dplyr (>= 1.0.10), ggplot2 (>= 3.3.6), igraph (>= 1.3.5), Matrix (>= 1.5.1), prodlim (>= 2019.11.13), quadprog (>= 1.5.8), reticulate (>= 1.26), visNetwork (>= 2.1.2), survival (>= 3.4.0), utils (>= 4.2.1), tidyr (>= 1.2.1), survminer (>= 0.4.9), stringr (>= 1.4.1)
+LinkingTo: Rcpp, RcppEigen
+Roxygen: list(markdown = TRUE)
