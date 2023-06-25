@@ -2929,7 +2929,7 @@ runOpera <- function(ncat, dat, TimeN, yN, cenN, covN = NULL, withCov = F,
   }
 
   plot.igraph(Hasse_ABC, layout = layout_as_tree, ...)
-  suppressWarnings(title("The_Tree_like_Structure_of_Risk Factors", ...))
+  suppressWarnings(title("The Tree-like Structure of Risk Factors", ...))
 
   ypos <- 1
 
@@ -2965,7 +2965,7 @@ runOpera <- function(ncat, dat, TimeN, yN, cenN, covN = NULL, withCov = F,
     visLayout(randomSeed = 10)
 
   if(plt){
-    visSave(network, paste0(filepath, "tree-like structure.html"))
+    visSave(network, paste0(filepath, "tree-like_structure.html"))
   }
 
   dat <- createRiskGroups(dat = dat, numRiskFs = length(ncat))
@@ -3100,7 +3100,7 @@ runOpera <- function(ncat, dat, TimeN, yN, cenN, covN = NULL, withCov = F,
     finalR <- list("Before Pruning" = resultNoP[[2]])
 
     if(useOPERA){
-      filenames <- c("No Pruning with OPERA")
+      filenames <- c("No_Pruning_with_OPERA")
     }
 
     if(useLassoT){
@@ -3127,7 +3127,8 @@ runOpera <- function(ncat, dat, TimeN, yN, cenN, covN = NULL, withCov = F,
 
     plot.igraph(Hasse_ABC, layout = layout_as_tree,
                 vertex.color =  sapply(resultClassification, function(x){sequential_hcl(palette = "Hawaii", n = length(unique(resultClassification)), rev = TRUE)[x]}), ...)
-    suppressWarnings(title(paste0(filenames[j]), ...))
+
+    suppressWarnings(title(str_replace_all(filenames[j], "_", " "), ...))
 
     ypos <- 1
 
@@ -3167,7 +3168,7 @@ runOpera <- function(ncat, dat, TimeN, yN, cenN, covN = NULL, withCov = F,
       visLayout(randomSeed = 10) %>% visLegend(useGroups = FALSE, addNodes = LegendN, main = "Stage", width = 0.1) %>% visNodes(font = list(size = 30))
 
     if(plt){
-      visSave(network, paste0(filepath, filenames[j], "_tree_like structure.html"))
+      visSave(network, paste0(filepath, filenames[j], "_tree_like_structure.html"))
     }
 
 
@@ -3218,7 +3219,7 @@ runOpera <- function(ncat, dat, TimeN, yN, cenN, covN = NULL, withCov = F,
           pval.method =  TRUE,      # test name
           risk.table = T,        # Add risk table
           legend = "none",
-          title = filenames[j],
+          title = str_replace_all(filenames[j], "_", " "),
           font.tickslab = c(15),
           ggtheme = theme_bw() + theme(
             axis.title.x = element_text(size = 12),
