@@ -2923,13 +2923,13 @@ runOpera <- function(ncat, dat, TimeN, yN, cenN, covN = NULL, withCov = F,
     edges = edges, directed = T))
 
   if(plt){
-    pdf(file = paste0(filepath, "tree-like structure.pdf"),
+    pdf(file = paste0(filepath, "tree_like_structure.pdf"),
         width = pic_width,
         height = pic_height)
   }
 
   plot.igraph(Hasse_ABC, layout = layout_as_tree, ...)
-  title("The Tree-like Structure of Risk Factors", ...)
+  suppressWarnings(title("The_Tree_like_Structure_of_Risk Factors", ...))
 
   ypos <- 1
 
@@ -3019,14 +3019,14 @@ runOpera <- function(ncat, dat, TimeN, yN, cenN, covN = NULL, withCov = F,
     finalR <- list("Before Pruning" = resultNoP[[2]], "After Pruning" = resultP)
 
     if(useOPERA){
-      filenames <- c("No Pruning with OPERA")
+      filenames <- c("No_Pruning_with_OPERA")
     }
 
     if(useLassoT){
       if(useBIC){
-        filenames <- c("No Pruning with Lasso Tree with BIC")
+        filenames <- c("No_Pruning_with_Lasso_Tree_with_BIC")
       }else{
-        filenames <- c("No Pruning with Lasso Tree with AIC")
+        filenames <- c("No_Pruning_with_Lasso_Tree_with_AIC")
       }
     }
 
@@ -3036,48 +3036,48 @@ runOpera <- function(ncat, dat, TimeN, yN, cenN, covN = NULL, withCov = F,
 
     if(coarse_pruning){
       if(useAIC){
-        filenames <- c(filenames, "Coarse Pruning Using AIC or Its Equilvalence")
+        filenames <- c(filenames, "Coarse_Pruning_Using_AIC_or_Its_Equilvalence")
       }
       if(useIbs){
-        filenames <- c(filenames, "Coarse Pruning Using the Brier Score")
+        filenames <- c(filenames, "Coarse_Pruning_Using_the_Brier_Score")
       }
 
       if(useLRT & !is.null(threshold)){
-        filenames <- c(filenames, paste0("Coarse Pruning Using the LRT with Alpha ", threshold))
+        filenames <- c(filenames, paste0("Coarse_Pruning_Using_the_LRT_with_Alpha_", threshold))
       }
 
       if(!is.null(prefix_stage)){
-        filenames <- c(filenames, paste0("Coarse Pruning Using the Prespecied Number of Stages ", prefix_stage))
+        filenames <- c(filenames, paste0("Coarse_Pruning_Using_the_Prespecied_Number_of_Stages_", prefix_stage))
       }
     }
 
     if(fine_pruning){
       if(useAIC){
-        filenames <- c(filenames, "Fine Pruning with Exhaustive Search Using AIC or Its Equivalence")
+        filenames <- c(filenames, "Fine_Pruning_with_Exhaustive_Search_Using_AIC_or_Its_Equivalence")
       }
       if(useIbs){
-        filenames <- c(filenames, "Fine Pruning with Exhaustive Search Using the Brier Score")
+        filenames <- c(filenames, "Fine_Pruning_with_Exhaustive_Search_Using_the_Brier_Score")
       }
       if(useLRT & !is.null(threshold)){
-        filenames <- c(filenames, paste0("Fine Pruning with Exhaustive Search Using the LRT with Alpha ", threshold))
+        filenames <- c(filenames, paste0("Fine_Pruning_with_Exhaustive_Search_Using_the_LRT_with_Alpha_", threshold))
       }
       if(!is.null(prefix_stage)){
-        filenames <- c(filenames, paste0("Fine Pruning with Exhaustive Search Using the Prespecied Number of Stages ", prefix_stage))
+        filenames <- c(filenames, paste0("Fine_Pruning_with_Exhaustive_Search_Using_the_Prespecied_Number_of_Stages_", prefix_stage))
       }
     }
 
     if(fine_pruning_quad){
       if(useAIC){
-        filenames <- c(filenames, "Fine Pruning with the Quadratic Constraint Using AIC or Its Equivalence")
+        filenames <- c(filenames, "Fine_Pruning_with_the_Quadratic_Constraint_Using_AIC_or_Its_Equivalence")
       }
       if(useIbs){
-        filenames <- c(filenames, "Fine Pruning with the Quadratic Constraint Using the Brier Score")
+        filenames <- c(filenames, "Fine_Pruning_with_the_Quadratic_Constraint_Using_the_Brier_Score")
       }
       if(useLRT & !is.null(threshold)){
-        filenames <- c(filenames, paste0("Fine Pruning with the Quadratic Constraint Using the LRT with Alpha = ", threshold))
+        filenames <- c(filenames, paste0("Fine_Pruning_with_the_Quadratic_Constraint_Using_the_LRT_with_Alpha_", threshold))
       }
       if(!is.null(prefix_stage)){
-        filenames <- c(filenames, paste0("Fine Pruning with the Quadratic Constraint Using the Prespecied Number of Stages ", prefix_stage))
+        filenames <- c(filenames, paste0("Fine_Pruning_with_the_Quadratic_Constraint_Using_the_Prespecied_Number_of_Stages_", prefix_stage))
       }
     }
 
@@ -3105,9 +3105,9 @@ runOpera <- function(ncat, dat, TimeN, yN, cenN, covN = NULL, withCov = F,
 
     if(useLassoT){
       if(useBIC){
-        filenames <- c("No Pruning with Lasso Tree with BIC")
+        filenames <- c("No_Pruning_with_Lasso_Tree_with_BIC")
       }else{
-        filenames <- c("No Pruning with Lasso Tree with AIC")
+        filenames <- c("No_Pruning_with_Lasso_Tree_with_AIC")
       }
     }
 
@@ -3120,14 +3120,14 @@ runOpera <- function(ncat, dat, TimeN, yN, cenN, covN = NULL, withCov = F,
     dat <- dat %>% mutate(stage = resultClassification[variable])
 
     if(plt){
-      pdf(file = paste0(filepath, filenames[j], "_tree-like structure.pdf"),   # The directory you want to save the file in
+      pdf(file = paste0(filepath, filenames[j], "_tree_like_structure.pdf"),   # The directory you want to save the file in
           width = pic_width,
           height =  pic_height)
     }
 
     plot.igraph(Hasse_ABC, layout = layout_as_tree,
                 vertex.color =  sapply(resultClassification, function(x){sequential_hcl(palette = "Hawaii", n = length(unique(resultClassification)), rev = TRUE)[x]}), ...)
-    title(paste0(filenames[j]), ...)
+    suppressWarnings(title(paste0(filenames[j]), ...))
 
     ypos <- 1
 
@@ -3167,7 +3167,7 @@ runOpera <- function(ncat, dat, TimeN, yN, cenN, covN = NULL, withCov = F,
       visLayout(randomSeed = 10) %>% visLegend(useGroups = FALSE, addNodes = LegendN, main = "Stage", width = 0.1) %>% visNodes(font = list(size = 30))
 
     if(plt){
-      visSave(network, paste0(filepath, filenames[j], "_tree_-like structure.html"))
+      visSave(network, paste0(filepath, filenames[j], "_tree_like structure.html"))
     }
 
 
