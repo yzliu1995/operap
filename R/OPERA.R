@@ -304,6 +304,8 @@ dataset.gen <- function(beta.mat, p.mat,
 #'
 #' @return A matrix `Z` representing the node to which each observation resides.
 #'
+#' @export
+#'
 Zmatrix <- function(dat, colNames){
   n <- nrow(dat)
   Z <- matrix(0, nrow = n, ncol = length(colNames))
