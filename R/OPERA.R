@@ -229,15 +229,16 @@ dataset.gen <- function(beta.mat, p.mat,
     # failure times that follow exponential distribution with rate \lambda (i.e., mean 1/\lambda)(x) = \lambda exp{-\lambda x}
     y <- rexp(n, rate = exp(beta.mat[values]))
 
-    eta <-  seq(from = min(beta.mat)/2 , to = max(beta.mat)*2 , length.out = 500)
+    eta <-  seq(from = min(beta.mat)/2 , to = max(beta.mat)*2 , length.out = 200)
 
     targetdelta <- base::rep(0, n)
+    targety <- y
 
     for (j in 1:length(eta)){
       # exponential censoring time
       C <- rexp(n, rate = exp(eta[j]))
       tilda_y <- pmin(C,y)
-      targety <- tilda_y
+
       # y > C indicates censoring
       delta <- as.numeric(y<=C)
       # checks censoring rate
