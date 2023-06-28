@@ -246,12 +246,8 @@ dataset.gen <- function(beta.mat, p.mat,
       # 1 - mean(delta) indicates current censoring rate
       # 1 - mean(targetdelta) indicates the closest censoring rate to the target censoring rate so far
       if (abs(1 - mean(delta) - cen.prob) < abs(1 - mean(targetdelta) - cen.prob)) {
-        # check whether each node has at least 2 events and 2 censored observations
-        freqs <- as.data.frame.matrix(table(variables,delta))
-        if(sum(freqs$`1` <= 1) + sum(freqs$`0` <= 1) == 0){
-          targety <- tilda_y
-          targetdelta <- delta
-        }
+        targety <- tilda_y
+        targetdelta <- delta
       }
     }
 
