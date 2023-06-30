@@ -2826,7 +2826,7 @@ NTitleS <- function(x, riskNames, riskFactors, S){
 #' @importFrom grDevices pdf dev.off
 #' @importFrom graphics title legend
 #' @importFrom visNetwork visNetwork visNodes visOptions visEdges visLayout visLegend visSave
-#' @importFrom survminer ggsurvplot ggrisktable
+#' @importFrom survminer ggsurvplot ggsurvtable
 #' @importFrom ggplot2 annotate theme_bw theme element_text
 #' @importFrom tidyr drop_na unite
 #' @importFrom utils as.roman
@@ -3232,25 +3232,29 @@ runOpera <- function(ncat, dat, TimeN, yN, cenN, covN = NULL, withCov = F,
         )
 
         if(max(dat$stage) > 1){
-          survp$table <- ggrisktable(survfit(Surv(time, status) ~ stage,
+          survp$table <- ggsurvtable(survfit(Surv(time, status) ~ stage,
                                              data = dat, conf.type = "log-log"),
                                      data = dat,
                                      color = "stage",
+                                     survtable = "risk.table",
                                      palette = sequential_hcl(palette = "Hawaii", n = length(unique(resultClassification)), rev = TRUE),
-                                     fontsize = 4.5,
+                                     fontsize = 3,
+                                     risk.table.type = "abs_pct",
                                      xlab = x_label,
                                      ylab = "",
                                      legend.title = "",
-                                     font.tickslab = c(8, "bold"))
+                                     font.tickslab = c(3, "bold"))
         }else{
-          survp$table <- ggrisktable(survfit(Surv(time, status) ~ stage,
+          survp$table <- ggsurvtable(survfit(Surv(time, status) ~ stage,
                                              data = dat, conf.type = "log-log"),
                                      data = dat,
-                                     fontsize = 4.5,
+                                     survtable = "risk.table",
+                                     risk.table.type = "abs_pct",
+                                     fontsize = 3,
                                      xlab = x_label,
                                      ylab = "",
                                      legend.title = "",
-                                     font.tickslab = c(8, "bold"))
+                                     font.tickslab = c(3, "bold"))
         }
 
         survp$plot <- survp$plot+
