@@ -58,7 +58,7 @@ To facilitate cancer staging, there are two initial options available: utilizing
 
 `riskVariables`: A vector containing the variable names of the risk factors used for staging. In our example, the three variables are `Pam50 + Claudin - low subtype`, `Tumor Stage`, and `Neoplasm Histologic Grade`.
 
-`riskFactors`: A list specifying the levels for each risk factor in ascending order of prognosis. In our example, it is represented as `list(c("LumA", "Normal", "LumB", "Her2", "Basal"), c(1, 2, 3, 4), c(1, 2, 3))``. If a risk factor does not have a total ordering, we need to set the argument `ifE = TRUE` and provide the partial orderings as edges in the network using the `edges` argument.
+`riskFactors`: A list specifying the levels for each risk factor in ascending order of prognosis. In our example, it is represented as `list(c("LumA", "Normal", "LumB", "Her2", "Basal"), c(1, 2, 3, 4), c(1, 2, 3))`. If a risk factor does not have a total ordering, we need to set the argument `ifE = TRUE` and provide the partial orderings as edges in the network using the `edges` argument.
 
 `riskNames`: A vector containing the names of the risk factors, used to rename them in the resulting figures. In our example, they are `"a - Pam50"`, `"b - Tumor Grade"`, and `"c - Neoplasm Histologic Grade"`.
 
@@ -124,7 +124,26 @@ r_bric_bc_cp_opera_os <- runOpera(ncat = c(5L, 4L, 3L),
 ````
 
 
- If users prefer each stage to have a minimum number of patients (e.g., 30), they can modify the argument `minObs` as `minObs = 30`. This adjustment enables coarse pruning to select the optimal staging result, ensuring that each stage consists of at least 30 patients.
+If users prefer each stage to have a minimum number of patients (e.g., 30), they can modify the argument `minObs` as `minObs = 30`. This adjustment enables coarse pruning to select the optimal staging result, and ensures that each stage consists of at least `30` patients.
+
+In the example above, we assume that each risk factor has a total ordering. However, our package can also deal with some risk factor(s) with only partial ordering. The key is to set the correct edges representing the partial ordering.
+
+For example, if `Pam50` is a partially ordered risk factor with the partial ordering as `LumB <= Her2 <= Basal`, and no ordering for either `LumA` or `Normal` with respect to other levels. The network of all three risk factors will be comprised of one sub-network associated with levels from `LumB <= Her2 <= Basal`, and the other two sub-networks associated with `LumA` and `Normal` respectively. Below is the code that shows how to define the edges in this scenario. To perform the cancer staging, users only need to add `ifE = TRUE` and `edges = edges`. Note that there is no need to change the value passed to `riskFactors` as we still want `a1` to represent `LumA`, `a2` to represent `Normal`, and so on.
+
+````
+# One sub-network associated with levels from `LumB <= Her2 <= Basal`
+sub_1 <- edgesHasse(ncat = c(3L, 4L, 3L), e =  c())
+for(i in 1:3){
+  sub_1 <- gsub(paste0("a", i), paste0("e", 2+i), sub_1)
+} 
+sub_1 <- gsub("e", "a", sub_1)
+
+# The other two sub-networks associated with `LumA` and `Normal`
+sub_2 <- edgesHasse(ncat = c(1L, 4L, 3L), e =  c())
+sub_3 <-gsub("a1", "a2", sub_2)
+
+edges <- c(sub_2, sub_3, sub_1)
+````
 
 
 #### Lasso Tree
