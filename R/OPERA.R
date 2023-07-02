@@ -1160,7 +1160,7 @@ operai <- function(Data, TimeN, cenN, yN, covN, Z, Cnstrn,
                        Data = Data, withCov = withCov, maxiter = maxiter,
                        eps = eps, GIC = GIC, initial_result = result,
                        useIbs = F, useLRT = F, useAIC = T,
-                       coarse_pruning = T, fine_pruning = F,
+                       coarse_pruning = F, fine_pruning = F,
                        fine_pruning_quad = F, prefix_stage = NULL,
                        threshold = NULL, type = type, perc = perc, minObs = minObs)[[1]]
     }else{
@@ -1436,6 +1436,7 @@ getsEst <- function(Data, cen, y, curR, Cov, withCov, type, useIbs = F, useAIC =
 #' @param type The outcome type, either survival outcome or binary outcome.
 #' @param seed The seed used for generating the simulation dataset.
 #' @param getsAll A boolean indicating whether pruning is performed until only two stages are left with the values for all the criteria
+#' @param checkSampleSize A boolean indicating whether the number of patients in each stage is checked.
 #' @param perc The minimum proportion of patients required in each stage
 #' @param minObs The minimum number of patients required in each stage
 #'
@@ -1450,7 +1451,7 @@ operap <- function(cen, y, Z, Cnstrn, Cov, Data,
                    withCov = F, maxiter = 10, eps = 10^-4, GIC = NULL,
                    initial_result, useIbs  = FALSE, useLRT  = TRUE, useAIC = FALSE, coarse_pruning = FALSE,
                    fine_pruning = TRUE, fine_pruning_quad = FALSE,
-                   prefix_stage = 5, threshold = 0.01, type = "surv", seed = 0, getsAll = F, perc = 0.1, minObs = 30, ...){
+                   prefix_stage = 5, threshold = 0.01, type = "surv", seed = 0, getsAll = F, perc = 0.1, minObs = 30, checkSampleSize = T,...){
 
 
   if(getsAll & (fine_pruning | fine_pruning_quad | coarse_pruning)){
@@ -1491,9 +1492,9 @@ operap <- function(cen, y, Z, Cnstrn, Cov, Data,
     Cov <- matrix(0, 1, 1)
   }
 
-  if(max(totalS) > 2 & coarse_pruning & useAIC){
+  if(checkSampleSize & (sum(fine_pruning + fine_pruning_quad + coarse_pruning)  == 0)){
 
-    allEsts <- getsEst(Data = Data, cen = cen, y = y, curR = result, Cov = Cov, withCov = withCov, type = type, useAIC = T,
+    allEsts <- getsEst(Data = Data, cen = cen, y = y, curR = initial_result, Cov = Cov, withCov = withCov, type = type, useAIC = T,
             seed = seed, GIC = GIC)
 
     best_beta <- allEsts[[1]]
@@ -1508,99 +1509,113 @@ operap <- function(cen, y, Z, Cnstrn, Cov, Data,
 
     print(paste("The model criterion equals: ", round(best_aic, -log10(eps)-1), " before performing the coarse pruning."))
 
-    print("The coarse pruning has started.")
+    print("Checking the number of patients in each stage:")
 
-    Data[,"cStage"] <- best_result[as.character(Data[,"variable"])] - 1
+    Data[,"cStage"] <- best_result[as.character(Data[,"variable"])]
     counts <- xtabs(~cStage, data = Data)
 
 
 
     if( ((sum(counts < as.integer(perc*nrow(Data))) == 0) | (sum(counts < minObs) == 0))){
 
-      aics <- c(best_aic)
+      result <- best_result
+      print("Each stage has sufficient patients.")
 
-      allBetas <- c(best_beta)
-
-      if(withCov){
-        allThetas <- c(best_theta)
-      }
-
-      allRs <- best_result
     }else{
-      aics <- c()
+      print(paste0("There are no sufficient patients in the following stages: ", paste0(names(which((counts <  as.integer(perc*nrow(Data))) |  (counts <  minObs) )),  collapse = ", ")))
+      print("Merging has begun:")
 
-      allBetas <- c()
+      r <- unname(best_result)
 
-      if(withCov){
-        allThetas <- c()
+      toBeM <- as.integer(names(which((counts <  as.integer(perc*nrow(Data))) &  (counts <  minObs) )))
+
+      if(1 %in% toBeM){
+        r <- ifelse(r %in% c(1, 2), 1.5, r)
       }
-      allRs <- NULL
-    }
 
-    for(m in 1:(totalS-1)){
+      if(max(r) %in% toBeM){
+        r <- ifelse(r %in% c(max(r) - 1, max(r)), max(r) - 0.5, r)
+      }
 
-      for(n in 1:(totalS-m)){
+      toBeMN <- toBeM[!toBeM  %in% c(1, max(r))]
 
-        r <- ifelse(result %in% m:(m+n), mean(m:(m+n)), result)
+      bestAIC <- NULL
 
+      if(length(toBeMN) > 0){
+        howToMerge <- as.matrix(expand.grid(replicate(length(toBeMN), c(-0.5, 0.5),  simplify = F)))
+        for(kk in 1:nrow(howToMerge)){
+          for(cc in 1:ncol(howToMerge)){
+            if(howToMerge[kk, cc] > 0){
+              r <- ifelse(r %in% c(toBeMN[cc], toBeMN[cc]+1), toBeMN[cc]+0.5, r)
+            }else{
+              r <- ifelse(r %in% c(toBeMN[cc], toBeMN[cc]-1), toBeMN[cc]-0.5, r)
+            }
+          }
+
+          r <- as.numeric(as.factor(r))
+
+          names(r) <- stagingV
+
+          print("The current stages: ")
+          print(r)
+
+          eEsts <- getsEst(Data = Data, cen = cen, y = y, curR = r, Cov = Cov, withCov = withCov, type = type, useAIC = T,
+                           seed = seed, GIC = GIC)
+
+          curbeta <- eEsts[[1]]
+
+          aic <- eEsts[[3]]
+
+          if(withCov){
+            theta <- eEsts[[4]]
+          }
+
+          print(paste("The current model criterion equals: ", round(aic, -log10(eps)-1)))
+
+          if(is.null(bestAIC)){
+            bestAIC <- aic
+            curBest <- r
+          }else{
+            if(aic < bestAIC){
+              bestAIC <- aic
+              curBest <- r
+            }
+          }
+
+        }
+      }else{
         r <- as.numeric(as.factor(r))
 
         names(r) <- stagingV
 
-        Data[,"cStage"] <- r[as.character(Data[,"variable"])] - 1
-        counts <- xtabs(~cStage, data = Data)
-
-        if( ((sum(counts < as.integer(perc*nrow(Data))) == 0) | (sum(counts < minObs) == 0))){
-
-          if(length(unique(r)) > 1){
-
-            print("The current stages: ")
-            print(r)
-
-            eEsts <- getsEst(Data = Data, cen = cen, y = y, curR = r, Cov = Cov, withCov = withCov, type = type, useAIC = T,
-                             seed = seed, GIC = GIC)
-
-            curbeta <- eEsts[[1]]
-
-            aic <- eEsts[[3]]
-
-            if(withCov){
-              theta <- eEsts[[4]]
-            }
-
-            print(paste("The current model criterion equals: ", round(aic, -log10(eps)-1)))
-
-            aics <- c(aics, aic)
-            allBetas <- c(allBetas, curbeta)
-            if(withCov){
-              allThetas <- c(allThetas, theta)
-            }
-            if(is.null(allRs)){
-              allRs <- t(r)
-            }else{
-              allRs <- rbind(allRs, r)
-            }
-
-          }
-        }
-
-
-
+        print("The current stages: ")
+        print(r)
+        curBest <- r
       }
+
+      Data[,"cStage"] <- curBest[as.character(Data[,"variable"])]
+
+      counts <- xtabs(~cStage, data = Data)
+
+      if( ((sum(counts < as.integer(perc*nrow(Data))) > 0) & (sum(counts < minObs) > 0))  & ( length(unique(curBest)) > 2 ) ){
+
+        curBest <- operap(cen = cen, y = y, Z = Zp, Cnstrn = Cnstrnp, Cov = Cov,
+                       Data = Data, withCov = withCov, maxiter = maxiter,
+                       eps = eps, GIC = GIC, initial_result = curBest,
+                       useIbs = F, useLRT = F, useAIC = F,
+                       coarse_pruning = F, fine_pruning = F,
+                       fine_pruning_quad = F, prefix_stage = NULL,
+                       threshold = NULL, type = type, perc = perc, minObs = minObs, checkSampleSize = T)[[1]]
+      }
+
     }
-    if(!is.null(prefix_stage)){
-      newAllRs <- data.frame(allRs) %>% mutate(maxS = apply(., 1, max)) %>% mutate(cri = aics) %>% filter(maxS == prefix_stage)
-      result <- allRs[which(aics == min(newAllRs$cri)),]
-    }else{
-      result <- allRs[which.min(aics),]
-    }
-    print("After the coarse pruning, the best result: ")
-    print(result)
-    finalResult <- list(result)
-    finalCoarseAIC <- result
+
+    print("After merging, the best result: ")
+    print(curBest)
+    finalResult <- list(curBest)
   }
 
-  if(max(totalS) > 2 & coarse_pruning & ((!useAIC) | (getsAll))){
+  if(max(totalS) > 2 & coarse_pruning){
 
     if(is.null(prefix_stage)){
       reducedS <- totalS - 2
@@ -1623,6 +1638,17 @@ operap <- function(cen, y, Z, Cnstrn, Cov, Data,
         print(paste0("The initial ibs equals: ", round(bestIBS, -log10(eps)), " before pruning."))
       }
 
+      allEsts <- getsEst(Data = Data, cen = cen, y = y, curR = best_result, Cov = Cov, withCov = withCov, type = type, useAIC = T,
+                         seed = seed, GIC = GIC)
+
+      best_beta <- allEsts[[1]]
+
+      best_aic  <- allEsts[[3]]
+
+      if(withCov){
+        best_theta <- allEsts[[4]]
+      }
+
       print("The coarse pruning has started.")
 
       if(useIbs){
@@ -1631,6 +1657,10 @@ operap <- function(cen, y, Z, Cnstrn, Cov, Data,
 
       if(useLRT){
         pvs <- c(0)
+      }
+
+      if(useAIC){
+        aicss <- c(best_aic)
       }
 
 
@@ -1644,10 +1674,10 @@ operap <- function(cen, y, Z, Cnstrn, Cov, Data,
         best_result_f <- operap(cen = cen, y = y, Z = Zp, Cnstrn = Cnstrnp, Cov = Cov,
                                 Data = Data, withCov = withCov, maxiter = maxiter,
                                 eps = eps, GIC = GIC, initial_result = best_result,
-                                useIbs = F, useLRT = F, useAIC = T,
-                                coarse_pruning = T, fine_pruning = F,
+                                useIbs = F, useLRT = F, useAIC = F,
+                                coarse_pruning = F, fine_pruning = F,
                                 fine_pruning_quad = F, prefix_stage = NULL,
-                                threshold = NULL, type = type, perc = perc, minObs = minObs)[[1]]
+                                threshold = NULL, type = type, perc = perc, minObs = minObs, checkSampleSize = T)[[1]]
       }else{
         best_result_f <- best_result
       }
@@ -1730,7 +1760,7 @@ operap <- function(cen, y, Z, Cnstrn, Cov, Data,
                            Data = Data, withCov = withCov, maxiter = maxiter,
                            eps = eps, GIC = GIC, initial_result = best_result,
                            useIbs = F, useLRT = F, useAIC = T,
-                           coarse_pruning = T, fine_pruning = F,
+                           coarse_pruning = F, fine_pruning = F,
                            fine_pruning_quad = F, prefix_stage = NULL,
                            threshold = NULL, type = type, perc = perc, minObs = minObs)[[1]]
         }else{
@@ -1782,12 +1812,25 @@ operap <- function(cen, y, Z, Cnstrn, Cov, Data,
           finalResult <- list("The result" = rs[[which.min(ibss)]], "The brier scores" = ibss)
         }
 
+        if(useAIC){
+
+          allEsts <- getsEst(Data = Data, cen = cen, y = y, curR = result, Cov = Cov, withCov = withCov, type = type, useAIC = T,
+                             seed = seed, GIC = GIC)
+
+          curaic  <- allEsts[[3]]
+
+          aicss <- c(aicss, curaic)
+          print(paste("The AIC equals", round(curaic, -log10(eps))))
+
+          finalResult <- list("The result" = rs[[which.min(aicss)]], "The AICs or equivalances" = aicss)
+        }
+
         if(!is.null(prefix_stage)){
           finalResult <- list("The result" = rs[[length(rs)]])
         }
 
         if(getsAll){
-          finalResult <- list("The results" = rs, "The p-values" = pvs, "The brier scores" = ibss, "The result using AIC" = finalCoarseAIC)
+          finalResult <- list("The results" = rs, "The p-values" = pvs, "The brier scores" = ibss, "The AICs or equivalances" = aicss)
         }
 
       }
@@ -1871,7 +1914,7 @@ operap <- function(cen, y, Z, Cnstrn, Cov, Data,
                               Data = Data, withCov = withCov, maxiter = maxiter,
                               eps = eps, GIC = GIC, initial_result = best_result,
                               useIbs = F, useLRT = F, useAIC = T,
-                              coarse_pruning = T, fine_pruning = F,
+                              coarse_pruning = F, fine_pruning = F,
                               fine_pruning_quad = F, prefix_stage = NULL,
                               threshold = NULL, type = type, perc = perc, minObs = minObs)[[1]]
       }else{
@@ -2295,7 +2338,7 @@ operap <- function(cen, y, Z, Cnstrn, Cov, Data,
                                 Data = Data, withCov = withCov, maxiter = maxiter,
                                 eps = eps, GIC = GIC, initial_result = result,
                                 useIbs = F, useLRT = F, useAIC = T,
-                                coarse_pruning = T, fine_pruning = F,
+                                coarse_pruning = F, fine_pruning = F,
                                 fine_pruning_quad = F, prefix_stage = NULL,
                                 threshold = NULL, type = type, perc = perc, minObs = minObs)[[1]]
         }else{
@@ -2993,7 +3036,7 @@ runOpera <- function(ncat, dat, TimeN, yN, cenN, covN = NULL, withCov = F,
                       Data = dat, withCov = withCov, maxiter = maxiter,
                       eps = eps, GIC = GIC, initial_result = resultNoP[[1]],
                       useIbs = F, useLRT = F, useAIC = T,
-                      coarse_pruning = T, fine_pruning = F,
+                      coarse_pruning = F, fine_pruning = F,
                       fine_pruning_quad = F, prefix_stage = NULL,
                       threshold = NULL, type = type, perc = perc, minObs = minObs)[[1]]
     }else{
