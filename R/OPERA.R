@@ -1815,7 +1815,7 @@ operap <- function(cen, y, Z, Cnstrn, Cov, Data,
 
         if(useAIC){
 
-          allEsts <- getsEst(Data = Data, cen = cen, y = y, curR = result, Cov = Cov, withCov = withCov, type = type, useAIC = T,
+          allEsts <- getsEst(Data = Data, cen = cen, y = y, curR = best_result, Cov = Cov, withCov = withCov, type = type, useAIC = T,
                              seed = seed, GIC = GIC)
 
           curaic  <- allEsts[[3]]
