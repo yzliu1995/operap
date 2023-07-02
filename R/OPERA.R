@@ -1660,6 +1660,7 @@ operap <- function(cen, y, Z, Cnstrn, Cov, Data,
       }
 
       if(useAIC){
+        print(paste0("The initial AIC equals: ", round(best_aic, -log10(eps)), " before pruning."))
         aicss <- c(best_aic)
       }
 
@@ -1899,6 +1900,7 @@ operap <- function(cen, y, Z, Cnstrn, Cov, Data,
       }
 
       if(useAIC){
+        print(paste0("The initial AIC equals: ", round(best_aic, -log10(eps)), " before pruning."))
         aicss <- c(best_aic)
       }
 
