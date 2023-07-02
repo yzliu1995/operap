@@ -1522,7 +1522,7 @@ operap <- function(cen, y, Z, Cnstrn, Cov, Data,
       print("Each stage has sufficient patients.")
 
     }else{
-      print(paste0("There are no sufficient patients in the following stages: ", paste0(names(which((counts <  as.integer(perc*nrow(Data))) |  (counts <  minObs) )),  collapse = ", ")))
+      print(paste0("There are no sufficient patients in the following stages: ", paste0(names(which((counts <  as.integer(perc*nrow(Data))) &  (counts <  minObs) )),  collapse = ", ")))
       print("Merging has begun:")
 
       r <- unname(best_result)
