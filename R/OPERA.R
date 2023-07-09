@@ -1451,7 +1451,7 @@ operap <- function(cen, y, Z, Cnstrn, Cov, Data,
                    withCov = F, maxiter = 10, eps = 10^-4, GIC = NULL,
                    initial_result, useIbs  = FALSE, useLRT  = TRUE, useAIC = FALSE, coarse_pruning = FALSE,
                    fine_pruning = TRUE, fine_pruning_quad = FALSE,
-                   prefix_stage = 5, threshold = 0.01, type = "surv", seed = 0, getsAll = F, perc = 0.1, minObs = 30, checkSampleSize = T,...){
+                   prefix_stage = 5, threshold = 0.01, type = "surv", seed = 0, getsAll = F, perc = 0.1, minObs = 30, checkSampleSize = T, reScale = 1, ...){
 
 
   if(getsAll & (fine_pruning | fine_pruning_quad | coarse_pruning)){
@@ -2068,7 +2068,7 @@ operap <- function(cen, y, Z, Cnstrn, Cov, Data,
 
             # IRWLS
             if(repeatConvs ==  0){
-              irwls_pruning <- IRLSPAT(coeff = curbeta, theta = theta, cen = cen, y = y, Z = Z,
+              irwls_pruning <- IRLSPAT(coeff = curbeta/reScale, theta = theta, cen = cen, y = y, Z = Z,
                                        cov = Cov, LCnstrn = oldConsts, qCnstrn = qConsts,
                                        mCnstrn = repeatConvs,
                                        minCoeff = min(curbeta), maxCoeff = max(curbeta),
@@ -2077,7 +2077,7 @@ operap <- function(cen, y, Z, Cnstrn, Cov, Data,
             }
 
             if(repeatConvs ==  1){
-              irwls_pruning <- IRLSPAT(coeff = curbeta, theta = theta, cen = cen, y = y, Z = Z,
+              irwls_pruning <- IRLSPAT(coeff = curbeta/reScale, theta = theta, cen = cen, y = y, Z = Z,
                                        cov = Cov, LCnstrn = oneConsts, qCnstrn = qConsts,
                                        mCnstrn = repeatConvs,
                                        minCoeff = min(curbeta), maxCoeff = max(curbeta),
@@ -2088,7 +2088,7 @@ operap <- function(cen, y, Z, Cnstrn, Cov, Data,
 
             if(repeatConvs ==  2){
 
-              irwls_pruning <- IRLSPAT(coeff = curbeta, theta = theta, cen = cen, y = y, Z = Z,
+              irwls_pruning <- IRLSPAT(coeff = curbeta/reScale, theta = theta, cen = cen, y = y, Z = Z,
                                        cov = Cov, LCnstrn = twoConsts, qCnstrn = qConsts,
                                        mCnstrn = repeatConvs,
                                        minCoeff = min(curbeta), maxCoeff = max(curbeta),
