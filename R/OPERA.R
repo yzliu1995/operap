@@ -3133,12 +3133,8 @@ runOpera <- function(ncat, dat, TimeN, yN, cenN, covN = NULL, withCov = F,
 
 
     if(getsAll & !is.null(threshold)){
-      if(coarse_pruning){
-        results[[length(results)+1]] <- finalR[["After Pruning"]][["The result using AIC"]]
-      }else{
-        results[[length(results)+1]] <- finalR[["After Pruning"]][[1]][[which.min(finalR[["After Pruning"]][["The AICs or equivalances"]])]]
 
-      }
+      results[[length(results)+1]] <- finalR[["After Pruning"]][[1]][[which.min(finalR[["After Pruning"]][["The AICs or equivalances"]])]]
       results[[length(results)+1]] <- finalR[["After Pruning"]][[1]][[which.min(finalR[["After Pruning"]][["The brier scores" ]])]]
       results[[length(results)+1]] <- finalR[["After Pruning"]][[1]][[suppressWarnings(min(min(which(finalR[["After Pruning"]][["The p-values"]][-c(1)] <= threshold)+1)-1, length(finalR[["After Pruning"]][["The p-values"]])))]]
     }else{
