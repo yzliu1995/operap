@@ -357,7 +357,7 @@ generatePalette <- function(beta.mat, label, c = "Viridis"){
 #'
 dM <- function(X, ref = TRUE){
   if(length(unique(X)) == 1){
-    stop("Only one category!")
+    return(t(t(rep(1, length(X)))))
   }
   M <- matrix(0, nrow = length(X), ncol = length(levels(as.factor(X))))
   M[cbind(1:nrow(M), match(as.factor(X), levels(as.factor(X))))] <- 1
